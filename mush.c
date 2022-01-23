@@ -7,7 +7,24 @@
 #define MAX_CHARACTERS 2048
 #define MAX_WORDS 128
 
-int main(int argc, char *argv[]) {
+void run_command(char* command_string[]) {
+    pid_t pid = fork(); 
+  
+    if (pid == -1) {
+        printf("\nFailed forking child..");
+        return;
+    } else if (pid == 0) {
+        if (execvp(command_string[0], command_string)) {
+            perror("exec");
+        }
+        exit(0);
+    } else {
+        wait(NULL); 
+        return;
+    }   
+}
+
+int main() {
     for(;;) { 
         printf("isnide23:");
 
@@ -16,12 +33,11 @@ int main(int argc, char *argv[]) {
         int i = 0;
 
         fgets(buf, MAX_CHARACTERS, stdin);
-        char* token = strtok(buf, " ");
+        char* token = strtok(buf, " \t\n\r");
         while (token != NULL) {
-            printf("%s\n", token);
             command_string[i] = token;
             i++;
-            token = strtok(NULL, " ");
+            token = strtok(NULL, "  \t\n\r");
         }
 
         command_string[i] = NULL;
@@ -32,12 +48,17 @@ int main(int argc, char *argv[]) {
             i++;
         }
 
-        printf("%s\n", command_string[i]);
-
-        execvp(command_string[0], command_string);
-
-        printf("This line shouldn't printed if execvp() runs correctly\n");
-        return 0;
+        if (strcmp(command_string[0], "cd") == 0) {
+            if (chdir(command_string[1]) == -1) {
+                perror("Error: ");
+            }
+        }
+        else if (strcmp(command_string[0], "exit") == 0){
+            exit(0);
+        }    
+        else {
+            run_command(command_string);
+        }
     }
 
     return 0;
