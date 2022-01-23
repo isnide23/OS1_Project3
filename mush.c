@@ -43,11 +43,6 @@ int main() {
         command_string[i] = NULL;
         i = 0;
 
-        while (command_string[i] != NULL) {
-            printf("command string %d: %s\n", i, command_string[i]);
-            i++;
-        }
-
         if (strcmp(command_string[0], "cd") == 0) {
             if (chdir(command_string[1]) == -1) {
                 perror("Error: ");
